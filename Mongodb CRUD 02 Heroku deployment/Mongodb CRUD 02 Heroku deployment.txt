@@ -1,0 +1,298 @@
+Interaction with mongodb
+ - MongoDB is light weight database.
+ - MongoDB follows the client server architecture.
+ - MongoDB follows mongodb protocols.
+ - Mongoserver running on port no 27017.
+ - MongoDB supports JSON.
+ 
+Installation of MongoDB
+1. Download and install mongodb(community edition)
+	https://www.mongodb.com/try/download/community
+	
+*** For windows OS ***
+2. Create directory structure
+	c:/data/db
+
+3. Set path for environment variable
+	-> computer 
+	-> properties 
+	-> advance system settings
+	-> advanced tab
+	-> environmet veriables
+	-> click on path
+	-> edit
+	-> new
+	-> copy and paste path of installation of mongodb
+	   where mongo.exe and mongod.exe located
+
+MongoDB Quries (local database)
+Open two command prompts
+>mongod		-> mongo server		(may be optional)
+>mongo		-> mongo client -> auto connect to server
+
+ - create and switch to database
+	>use nodedb;
+ - create collection
+	>db.createCollection("products")
+ - insert data
+	>db.products.insert({"p_id":111, "p_name" : "p_one", "p_cost" : 10000})
+ - fetch data
+	>db.products.find()
+ - show databases
+	>show dbs
+ - delete database
+	>db.dropDatabase()
+	
+For cloud database
+1. Login to mongodb.com (atlas)
+2. Browse collections
+3. Create database 'nodedb' with collection 'products'
+4. Insert documents
+5. Click on databases from left panel
+6. Click on connect
+7. click on Connect to application
+8. Copy url and follow steps below url from web page
+	mongodb+srv://admin:admin@mdb.vtkja.mongodb.net/nodedb?retryWrites=true&w=majority
+	
+<>
+	fetch
+		- fetch.js
+	insert
+		- insert.js
+	update
+		- update.js
+	delete
+		- delete.js
+	 - server.js
+	 - url.js
+	 
+download modules
+	express
+	mongodb
+	body-parser
+	cors
+	
+>yarn add express mongodb body-parser cors --save
+
+***url.js***
+module.exports = "mongodb://localhost:27017"
+
+***fetch.js***
+//import modules
+const express = require('express')
+let mongodb = require('mongodb')
+//create mongo client
+let mcl = mongodb.MongoClient
+//create router instance
+var router = express.Router()
+//import url
+let url = require("../url")
+//create rest api
+router.get("/",(req,res)=>{
+    mcl.connect(url,(err,conn)=>{
+        if(err)
+        {
+            console.log("Error in connection :- ",err)
+        }
+        else
+        {
+            let db = conn.db("nodedb")
+            db.collection("products").find().toArray((err,array)=>{
+                if(err)
+                {
+                    console.log("Error while fetching data:- ",err)
+                }
+                else
+                {
+                    console.log("Data Sent")
+                    res.send(array)
+                }
+            })
+        }
+    })
+})
+//export router
+module.exports = router
+
+***insert.js***
+//import modules
+const express = require('express')
+let mongodb = require('mongodb')
+//create mongo client
+let mcl = mongodb.MongoClient
+//create router instance
+let router = express.Router()
+//import url
+let url = require("../url")
+//create rest api
+router.post("/",(req,res)=>{
+    let p_id = req.body.p_id
+    let p_name = req.body.p_name
+    let p_cost = req.body.p_cost
+    let obj = {
+        "p_id" : p_id,
+        "p_name" : p_name,
+        "p_cost" : p_cost
+    }
+    mcl.connect(url,(err,conn)=>{
+        if(err)
+        {
+            console.log("Error in connection:- ",err)
+        }
+        else
+        {
+            let db = conn.db("nodedb")
+            db.collection("products").insertOne(obj,(err)=>{
+                if(err)
+                {
+                    res.json({'insert':'failed'})
+                }
+                else
+                {
+                    console.log("Data inserted")
+                    res.json({'insert':'success'})
+                }
+            })
+        }
+    })
+})
+//export router
+module.exports = router
+
+***update.js***
+//import modules
+const express = require('express')
+let mongodb = require('mongodb')
+//create mongo client
+let mcl = mongodb.MongoClient
+//create router instance
+let router = express.Router()
+//import url
+let url = require("../url")
+//create rest api
+router.post("/",(req,res)=>{
+    let p_id = req.body.p_id
+    let p_name = req.body.p_name
+    let p_cost = req.body.p_cost
+    let obj = {
+        "p_name" : p_name,
+        "p_cost" : p_cost
+    }
+    mcl.connect(url,(err,conn)=>{
+        if(err)
+        {
+            console.log("Error in connection :- ",err)
+        }
+        else
+        {
+            let db = conn.db("nodedb") 
+            db.collection("products").updateOne({"p_id":p_id},{$set:obj},(err)=>{
+                if(err)
+                {
+                    res.json({'update':'failed'})
+                }
+                else
+                {
+                    console.log("Data updated")
+                    res.json({'update':'success'})
+                }
+            })           
+        }
+    })
+})
+//export router
+module.exports = router
+
+***delete.js***
+//import modules
+const express = require('express')
+let mongodb = require('mongodb')
+//create mongoclient
+let mcl = mongodb.MongoClient
+//create router instance
+let router = express.Router()
+//import url
+let url = require("../url")
+//create rest api
+router.post("/",(req,res)=>{
+    var p_id = req.body.p_id
+    var obj = {
+        "p_id" : p_id
+    }
+    mcl.connect(url,(err,conn)=>{
+        if(err)
+        {
+            console.log("Error in connection :- ",err)
+        }
+        else
+        {
+            let db = conn.db("nodedb")
+            db.collection("products").deleteOne(obj,(err)=>{
+                if(err)
+                {
+                    res.json({'delete':'failed'})
+                }
+                else
+                {
+                    console.log("Data deleted")
+                    res.json({'delete':'success'})
+                }
+            })
+        }
+    })
+})
+//export router
+module.exports = router
+
+Hosting the application
+>npm init
+
+1. Create .gitignore file
+	>npx gitignore node
+2. login to github.com and create repository
+3. Copy url
+	https://github.com/pranvicomputech/fullstack4pm.git
+4. initialyse local repository
+	>git init
+5. add files to repository
+	>git add .
+6. check status
+	>git status
+7. commit
+	>git commit -m "initial commit"
+8. add to remote repository
+	>git remote add origin https://github.com/pranvicomputech/fullstack4pm.git
+9. push code to repository
+	>git push -u origin master
+	
+	
+Heroku deployment
+1. login to heroku.com
+2. create new app -> mongodbcrudop
+3. click on create app
+4. deployment method git hub - connect to github
+5. choose repository - fullstack4pm
+6. choose manual deploy click on deploy branch
+7. copy url 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
